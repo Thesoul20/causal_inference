@@ -1,0 +1,273 @@
+--- 1. 生成模拟数据 ---
+模拟数据前5行：
+         Age  ExerciseHours  DrugDosage  SodiumIntake  BloodPressure
+0  59.967142       3.103962    9.646358   1546.096221      97.178407
+1  53.617357       3.344347   10.072698   2069.807495     102.188819
+2  61.476885       0.867913    9.562849   2293.197233     113.332933
+3  70.230299       0.000000   11.407107   3443.843829     129.102526
+4  52.658466       3.148565    6.478617   2778.276562     109.597625
+
+数据描述：
+               Age  ExerciseHours   DrugDosage  SodiumIntake  BloodPressure
+count  1000.000000    1000.000000  1000.000000   1000.000000    1000.000000
+mean     55.180964       2.063872    10.529765   2490.442816     108.178781
+std       9.683780       1.782908     2.213307    512.964592       9.272437
+min      30.000000       0.000000     3.825820   1035.275655      90.000000
+25%      48.524097       0.329433     9.077914   2131.289773     102.021872
+50%      55.253006       1.825113    10.481497   2500.092287     108.374004
+75%      61.479439       3.321492    12.037410   2833.472705     114.204727
+max      80.000000       8.171806    19.001185   4000.000000     135.192406
+
+--- 2. 定义因果图 (使用 networkx.DiGraph) ---
+NetworkX 图的节点: ['Age', 'DrugDosage', 'ExerciseHours', 'SodiumIntake', 'BloodPressure']
+NetworkX 图的边: [('Age', 'DrugDosage'), ('Age', 'ExerciseHours'), ('Age', 'BloodPressure'), ('DrugDosage', 'BloodPressure'), ('ExerciseHours', 'BloodPressure'), ('SodiumIntake', 'BloodPressure')]
+
+
+--- 案例 A: 分析 DrugDosage 对 BloodPressure 的因果效应 ---
+
+DrugDosage 模型概览:
+
+识别到的估计量 (Identified Estimand) for DrugDosage:
+Estimand type: EstimandType.NONPARAMETRIC_ATE
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+      d                            
+─────────────(E[BloodPressure|Age])
+d[DrugDosage]                      
+Estimand assumption 1, Unconfoundedness: If U→{DrugDosage} and U→BloodPressure then P(BloodPressure|DrugDosage,Age,U) = P(BloodPressure|DrugDosage,Age)
+
+### Estimand : 2
+Estimand name: iv
+No such variable(s) found!
+
+### Estimand : 3
+Estimand name: frontdoor
+No such variable(s) found!
+
+
+估计结果 (Estimate) for DrugDosage:
+*** Causal Estimate ***
+
+## Identified estimand
+Estimand type: EstimandType.NONPARAMETRIC_ATE
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+      d                            
+─────────────(E[BloodPressure|Age])
+d[DrugDosage]                      
+Estimand assumption 1, Unconfoundedness: If U→{DrugDosage} and U→BloodPressure then P(BloodPressure|DrugDosage,Age,U) = P(BloodPressure|DrugDosage,Age)
+
+## Realized estimand
+b: BloodPressure~DrugDosage+Age+DrugDosage*ExerciseHours+DrugDosage*SodiumIntake
+Target units: 
+
+## Estimate
+Mean value: -1.831666094909636
+### Conditional Estimates
+__categorical__ExerciseHours  __categorical__SodiumIntake
+(-0.001, 1.313]               (1035.275, 2041.858]          -2.234173
+                              (2041.858, 2357.877]          -1.830285
+                              (2357.877, 2628.755]          -1.590564
+                              (2628.755, 2931.874]          -1.337457
+                              (2931.874, 4000.0]            -0.950019
+(1.313, 2.413]                (1035.275, 2041.858]          -2.461771
+                              (2041.858, 2357.877]          -2.072875
+                              (2357.877, 2628.755]          -1.783558
+                              (2628.755, 2931.874]          -1.573688
+                              (2931.874, 4000.0]            -1.071754
+(2.413, 3.656]                (1035.275, 2041.858]          -2.613739
+                              (2041.858, 2357.877]          -2.221413
+                              (2357.877, 2628.755]          -1.969067
+                              (2628.755, 2931.874]          -1.746549
+                              (2931.874, 4000.0]            -1.347316
+(3.656, 8.172]                (1035.275, 2041.858]          -2.834121
+                              (2041.858, 2357.877]          -2.495709
+                              (2357.877, 2628.755]          -2.213551
+                              (2628.755, 2931.874]          -1.929114
+                              (2931.874, 4000.0]            -1.603163
+dtype: float64
+结论：药物剂量每增加1单位，血压平均改变: -1.83 单位
+
+反驳测试 (Refutation) for DrugDosage:
+
+安慰剂处理反驳结果 (Placebo Treatment Refuter):
+Refute: Use a Placebo Treatment
+Estimated effect:-1.831666094909636
+New effect:0.0
+p value:1.0
+
+
+随机共同原因反驳结果 (Random Common Cause Refuter):
+Refute: Add a random common cause
+Estimated effect:-1.831666094909636
+New effect:-1.8313195618584053
+p value:0.94
+
+
+
+--- 案例 B: 分析 ExerciseHours 对 BloodPressure 的因果效应 ---
+
+识别到的估计量 (Identified Estimand) for ExerciseHours:
+Estimand type: EstimandType.NONPARAMETRIC_ATE
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+       d                              
+────────────────(E[BloodPressure|Age])
+d[ExerciseHours]                      
+Estimand assumption 1, Unconfoundedness: If U→{ExerciseHours} and U→BloodPressure then P(BloodPressure|ExerciseHours,Age,U) = P(BloodPressure|ExerciseHours,Age)
+
+### Estimand : 2
+Estimand name: iv
+No such variable(s) found!
+
+### Estimand : 3
+Estimand name: frontdoor
+No such variable(s) found!
+
+
+估计结果 (Estimate) for ExerciseHours:
+*** Causal Estimate ***
+
+## Identified estimand
+Estimand type: EstimandType.NONPARAMETRIC_ATE
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+       d                              
+────────────────(E[BloodPressure|Age])
+d[ExerciseHours]                      
+Estimand assumption 1, Unconfoundedness: If U→{ExerciseHours} and U→BloodPressure then P(BloodPressure|ExerciseHours,Age,U) = P(BloodPressure|ExerciseHours,Age)
+
+## Realized estimand
+b: BloodPressure~ExerciseHours+Age+ExerciseHours*DrugDosage+ExerciseHours*SodiumIntake
+Target units: 
+
+## Estimate
+Mean value: -1.8250070839285115
+### Conditional Estimates
+__categorical__DrugDosage  __categorical__SodiumIntake
+(3.825, 8.704]             (1035.275, 2041.858]          -2.424280
+                           (2041.858, 2357.877]          -1.432884
+                           (2357.877, 2628.755]          -0.327972
+                           (2628.755, 2931.874]           0.315178
+                           (2931.874, 4000.0]             1.505261
+(8.704, 9.918]             (1035.275, 2041.858]          -3.320352
+                           (2041.858, 2357.877]          -2.097515
+                           (2357.877, 2628.755]          -1.284869
+                           (2628.755, 2931.874]          -0.487667
+                           (2931.874, 4000.0]             0.491865
+(9.918, 11.124]            (1035.275, 2041.858]          -3.842144
+                           (2041.858, 2357.877]          -2.551343
+                           (2357.877, 2628.755]          -1.780730
+                           (2628.755, 2931.874]          -1.023753
+                           (2931.874, 4000.0]             0.206309
+(11.124, 12.428]           (1035.275, 2041.858]          -4.514957
+                           (2041.858, 2357.877]          -3.117318
+                           (2357.877, 2628.755]          -2.343658
+                           (2628.755, 2931.874]          -1.550006
+                           (2931.874, 4000.0]            -0.070046
+(12.428, 19.001]           (1035.275, 2041.858]          -5.308441
+                           (2041.858, 2357.877]          -3.961000
+                           (2357.877, 2628.755]          -3.042497
+                           (2628.755, 2931.874]          -2.449391
+                           (2931.874, 4000.0]            -1.201086
+dtype: float64
+结论：运动时长每增加1小时，血压平均改变: -1.83 单位
+
+反驳测试 (Refutation) for ExerciseHours:
+
+安慰剂处理反驳结果 (Placebo Treatment Refuter):
+Refute: Use a Placebo Treatment
+Estimated effect:-1.8250070839285115
+New effect:0.0
+p value:1.0
+
+
+随机共同原因反驳结果 (Random Common Cause Refuter):
+Refute: Add a random common cause
+Estimated effect:-1.8250070839285115
+New effect:-1.8255500967408913
+p value:0.92
+
+
+
+--- 案例 C: 分析 SodiumIntake 对 BloodPressure 的因果效应 ---
+
+识别到的估计量 (Identified Estimand) for SodiumIntake:
+Estimand type: EstimandType.NONPARAMETRIC_ATE
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+       d                         
+───────────────(E[BloodPressure])
+d[SodiumIntake]                  
+Estimand assumption 1, Unconfoundedness: If U→{SodiumIntake} and U→BloodPressure then P(BloodPressure|SodiumIntake,,U) = P(BloodPressure|SodiumIntake,)
+
+### Estimand : 2
+Estimand name: iv
+No such variable(s) found!
+
+### Estimand : 3
+Estimand name: frontdoor
+No such variable(s) found!
+
+
+估计结果 (Estimate) for SodiumIntake:
+*** Causal Estimate ***
+
+## Identified estimand
+Estimand type: EstimandType.NONPARAMETRIC_ATE
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+       d                         
+───────────────(E[BloodPressure])
+d[SodiumIntake]                  
+Estimand assumption 1, Unconfoundedness: If U→{SodiumIntake} and U→BloodPressure then P(BloodPressure|SodiumIntake,,U) = P(BloodPressure|SodiumIntake,)
+
+## Realized estimand
+b: BloodPressure~SodiumIntake+SodiumIntake*DrugDosage+SodiumIntake*ExerciseHours+SodiumIntake*Age
+Target units: 
+
+## Estimate
+Mean value: 0.009896659530184593
+### Conditional Estimates
+__categorical__DrugDosage  __categorical__ExerciseHours  __categorical__Age
+(3.825, 8.704]             (-0.001, 1.313]               (29.999, 46.965]      0.011022
+                                                         (46.965, 52.593]      0.012350
+                                                         (52.593, 57.487]      0.012941
+                                                         (57.487, 63.135]      0.013987
+                                                         (63.135, 80.0]        0.015231
+                                                                                 ...   
+(12.428, 19.001]           (2.413, 3.656]                (63.135, 80.0]        0.009280
+                           (3.656, 8.172]                (29.999, 46.965]      0.003386
+                                                         (46.965, 52.593]      0.005354
+                                                         (52.593, 57.487]      0.006453
+                                                         (57.487, 63.135]      0.007823
+Length: 92, dtype: float64
+结论：钠摄入量每增加1单位，血压平均改变: 0.0099 单位
+
+反驳测试 (Refutation) for SodiumIntake:
+
+安慰剂处理反驳结果 (Placebo Treatment Refuter):
+Refute: Use a Placebo Treatment
+Estimated effect:0.009896659530184593
+New effect:0.0
+p value:1.0
+
+
+随机共同原因反驳结果 (Random Common Cause Refuter):
+Refute: Add a random common cause
+Estimated effect:0.009896659530184593
+New effect:0.009897096337588208
+p value:0.9199999999999999
+
